@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Employee {
+  id           String   @id @default(cuid())
+  employeeCode String   @unique
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  visitsHosted Visit[]  @relation("HostEmployee")
+}
+
+model Visit {
+  id             String     @id @default(cuid())
+  visitType      String
+  visitorName    String
+  phone          String
+  company        String
+  email          String
+  personToMeetId String
+  checkInTime    DateTime   @default(now())
+  checkOutTime   DateTime?
+  idProof        String
+  digitalCardId  String     @unique
+  status         VisitStatus @default(CHECKED_IN)
+  host           Employee   @relation("HostEmployee", fields: [personToMeetId], references: [id])
+
+  @@index([phone, status])
+  @@index([email, status])
+  @@index([checkInTime])
+}
+
+enum VisitStatus {
+  CHECKED_IN
+  CHECKED_OUT
+}
